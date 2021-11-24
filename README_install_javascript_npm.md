@@ -9,6 +9,11 @@ nvm install 16.13
 npm install -g npm@8.1.3
 ```
 
+## consider pnpm instead of regular npm; which is supposed to be faster and more efficient (shares packages across instances)
+```
+curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
+```
+
 # Installing "create-react-app" (if you want to use that front end library)
 ```
 npm install -g create-react-app
