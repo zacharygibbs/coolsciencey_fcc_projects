@@ -118,7 +118,7 @@
             svg.append('text')
                 .attr('x',width/2)
                 .attr('y', padding-25)
-                .text('Cool Sciencey Heat Map - Global Tempeartures')
+                .text('Cool Sciencey Heat Map - Global Temperatures')
                 .attr('id', 'title')
                 .attr('class', 'txt')
                 .style('font-size', 24)
@@ -299,7 +299,7 @@
                 tooltip.style('opacity', 0)
             }
 
-            d3.selectAll("rect").on('mouseover', mouseover)
+            d3.selectAll(".cell").on('mouseover', mouseover)
             .on('mousemove', mousemove)
             .on('mouseleave', mouseleave)
 
@@ -316,11 +316,6 @@
 	        .then(data => {
                     draw_chart(data);
             })
-            
-
-
-
-
     });
 </script>
 <body>
