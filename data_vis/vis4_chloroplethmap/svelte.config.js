@@ -7,7 +7,7 @@ const config = {
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
 		adapter: adapter(),
-		appDir: 'fcc/4_calculator/_app'
+		appDir: 'fcc/vis4_chloroplethmap/_app'
 	}
 };
 export default config;

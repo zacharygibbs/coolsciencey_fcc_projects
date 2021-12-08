@@ -36,12 +36,13 @@ df = df.transpose().unstack('year').transpose().reset_index()
 
 df = df.set_index(index_columns + ['year'])
 
-df = df.melt(value_vars=['highSchool','noHighSchool','someCollege','bachelorsOrHigher'], value_name='percent', ignore_index=False)
+#df = df.melt(value_vars=['highSchool','noHighSchool','someCollege','bachelorsOrHigher'], value_name='percent', ignore_index=False)
 
 years = pd.unique(df.index.get_level_values('year'))
 
 for year in years:
     df.loc[:,:,:, year].reset_index().drop('year',axis=1).transpose().to_json('education' + year + '.json')
+    #df.loc[:,:,:, year].reset_index().drop('year',axis=1).transpose().to_json('education' + year + '.json')
 
 
 #df_new = df[['FIPS Code', 'State', 'Area name'] + [i for i in df.columns if ('')]]

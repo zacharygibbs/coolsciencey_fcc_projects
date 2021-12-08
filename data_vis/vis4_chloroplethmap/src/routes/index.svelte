@@ -22,6 +22,9 @@
     let mapData = null;
     let educationData = null;
     let attrib = 'bachelorsOrHigher';
+    let yearString = '2015-19';
+    let curOpacity = 0.0;
+    let map_initialized=0;
 
 
     
@@ -46,7 +49,7 @@
         }
     }
 
-    const filterfun = (educData, attrib) => {
+    const filterfun = (educData, attrib, index=false) => {
         const res = (d)=>{
             let theOne = educData.filter((d2, index) => {
                 return d.id==d2.fips
@@ -59,7 +62,24 @@
             }
         }
         return res
+    }
 
+    const convertObjToArray = (inObj) => {
+        
+        if(inObj instanceof Object){
+            return Object.values(inObj)
+        }
+        else{
+            return inObj
+        }
+    }
+
+    const addIndextoObjects = (inArr) => {
+        let outArr = [...inArr];
+        outArr.forEach((element,index) => {
+            outArr[index].index = index
+        });
+        return outArr
     }
     
     function makeArr(startValue, stopValue, cardinality) {
@@ -73,43 +93,39 @@
     }   
 
 
-    const draw_map = (data) => {
+    const get_map_data = (data) => {
         if(!!data){
             mapData = data[0]
-            educationData = data[1]
-            console.log(mapData);
-            console.log(educationData);
-            const svg = d3.select("#d3chart")
+            educationData = convertObjToArray(data[1]);
+            educationData = addIndextoObjects(educationData);
+        }
+    }
+    const initialize_map = () => {
+        const svg = d3.select("#d3chart")
                             .append("svg")
+                            .attr('id','svg')
                             .attr("width", width)
                             .attr("height", height)
-
-            svg.append('text')
-                .attr('x',width/2)
-                .attr('y', padding-25)
-                .text('Cool Sciencey Chloropleth Map - Educational Attainment')
-                .attr('id', 'title')
-                .attr('class', 'txt')
-                .style('font-size', 24)
-                .style('font-weight','bold')
-                .style("text-anchor", "middle")
-                
-
-            svg.append('text')
-                .attr('x',width/2)
-                .attr('y', padding-5)
-                .text('Education')
-                .attr('id', 'description')
-                .attr('class', 'txt')
-                .style('font-size', 18)
-                .style('font-weight','bold')
-                .style("text-anchor", "middle")
-                //.style('font-size',100)
+        
+        let tooltip = d3.select('#d3chart')
+                .append("div")
+                .attr('id', 'tooltip')
+    }            
             
+    
+
+    const draw_map = (data) => {   
+            //d3.selectAll("path").remove(); 
+                    
+            console.log(mapData);
+            console.log(educationData);
+            //const svg = 
             let path = d3.geoPath();
             let path2 = d3.geoPath();
             
-            let map = svg.append('g')
+
+            let map = d3.select("#svg")
+                        .append('g')
                          .attr('class', 'map')
                          .selectAll('path')
                          .data(topojson.feature(mapData, mapData.objects.counties).features)
@@ -125,34 +141,28 @@
                          })
 
 
-            let statemap = svg.append('g')
+            let statemap = d3.select("#svg")
+                            .append('g')
                               .selectAll('path')
                               .data(topojson.feature(mapData, mapData.objects.states).features)
                               .enter()
                               .append('path')
                               .attr('class', 'state')
                               .attr('d', path2)
-
-                         
-                         
-
-
-
-
+          
             
-
-            svg.append('g')
+            let legWidth = 300;
+            let legRectWidth = 1;
+            let legRectHeight = 15;
+            let legPadding=0;
+            d3.select('#legend')
+              .html("")
+            d3.select("#svg").append('g')
                .attr('id', 'legend')
-               .attr('transform', 'translate(' + (padding*1.5) + ', ' + (height-padding*1.8) + ')')
+               .attr('transform', 'translate(' + 500 + ', ' + 0 + ')')
                
             let legend = d3.select('#legend')
 
-            legend.append('rect')
-                  .style('stroke', 'black')
-                  .style('stroke-width', '3px')
-                  .style('padding', '1px')
-                  .style('width', 600)
-                  .style('height', 90);
                 
             legend.append('text')
                   .attr('transform', 'translate(100, 25)')
@@ -160,8 +170,7 @@
                   .style('font-size','24px')
                   .text('Legend')
                   
-            let legWidth = 500;
-            let legRectWidth = 1;
+            
             let colorsAxis = colorFun(0,true);//d3.scaleQuantize()
                             //.domain([0, 100])
                             //.range(colorsRes.range())
@@ -177,7 +186,7 @@
                             .tickValues(dataLegendAxis)
                             //.tickValues(d3.range(d3.min(data, (d) => d.year), d3.max(data, (d) => d.year), 50))                
                             .tickFormat(d3.format('.0f'));
-            //debugger;
+            
             
             console.log(legAxis.tickValues())
 
@@ -195,20 +204,13 @@
                        .append('rect')
                        .attr("x", (d, i) => 50 + i*legRectWidth)//i * 30)
                        .attr("y", 50)//)//h - 3 * d)
-                       .attr('height', 25)
+                       .attr('height', legRectHeight)
                        .attr('width', legRectWidth)
                        .style('fill', (d, i) => colorsAxis(d))
                //.attr("class", "dot")
-               
-            
-
-
-
 
             // create a tooltip
-            let tooltip = d3.select('#d3chart')
-                .append("div")
-                .attr('id', 'tooltip')
+            let tooltip = d3.select('#tooltip')
                 .style('opacity', 0)
                 .style('background-color', 'aquamarine')
                 .style('border', 'solid')
@@ -218,30 +220,48 @@
                 .attr('data-education', null)
 
             const mouseover = (event, d) => {
-                tooltip.style('opacity', 0.7)
+                curOpacity = 0.7;
+                tooltip.style('opacity', curOpacity)
             }
 
             const mousemove = (event, d) => {
+                let curindex = filterfun(educationData,'index')(d)
+                let area_name = ''
+                console.log()
+                if(educationData[curindex]==undefined){
+                console.log('state boundary')
+                }
+                else{
+                    if(educationData[curindex].hasOwnProperty('area_name')){
+                        area_name = educationData[curindex]['area_name']
+                        tooltip.html('County: '  + area_name + '<br/>' 
+                                    + 'State: ' + educationData[curindex]['state'] + '<br/>'
+                                    + attrib + ': ' + parseFloat(educationData[curindex][attrib]).toFixed(1) + '<br/>')
+                               .style('left', (d3.pointer(event)[0]+ 30) + 'px')
+                               .style('top', (d3.pointer(event)[1] + 30) + 'px')
+                               .style('position', 'absolute')
+                               .attr('data-fips', d.id)
+                               .attr('data-education',parseFloat(educationData[curindex][attrib]))
+                    }
+                }
+
+
                 
-                tooltip.html('County: '  + filterfun(educationData,'area_name')(d) + '<br/>' 
-                        + 'State: ' + filterfun(educationData,'state')(d) + '<br/>'
-                        + attrib + ': ' + filterfun(educationData,attrib)(d) + '<br/>')
-                    .style('left', (d3.pointer(event)[0]) + 'px')
-                    .style('top', (d3.pointer(event)[1] + 150) + 'px')
-                    .style('position', 'absolute')
-                    .attr('data-fips', (d)=>d.id)
-                    .attr('data-education', filterfun(educationData,attrib))
             }
 
             const mouseleave = (event, d) => {
-                tooltip.style('opacity', 0)
+                curOpacity = 0//curOpacity - 0.1;
+                console.log(curOpacity);
+                tooltip.style('opacity', curOpacity)
             }
 
             d3.selectAll("path").on('mouseover', mouseover)
             .on('mousemove', mousemove)
-            .on('mouseleave', mouseleave)
+            //.on('mouseleave', mouseleave)
 
-        }
+            d3.selectAll('.state').on('mouseleave', mouseleave)
+
+        
     }
 
 
@@ -250,18 +270,47 @@
 
 //for_user_education.json
 //counties.json
+
+
+    const getData = (yearstring) => {
+
+        Promise.all([d3.json('counties.json'), d3.json('education' + yearstring + '.json')])
+                .then((data) => {
+                    if(map_initialized==0){
+                        console.log('initalizing')
+                        initialize_map();
+                    }
+                    get_map_data(data);
+                    draw_map();
+                    map_initialized = map_initialized + 1;
+                })    
+    }
     onMount(() => {
         //d3.json('for_user_education.json')
         console.log('start')
-        Promise.all([d3.json('counties.json'), d3.json('for_user_education.json')])
-                .then((data) => {draw_map(data)})    
+        getData(yearString)
         console.log('mount finished')
             })
 
 </script>
 <body>
-    <h1> FCC - Data Visualization</h1>
-    <h2> Project 4: Chloropleth Map - D3</h2>
+
+    
+    <h1 id="title"> FCC - Data Visualization Project 4: Chloropleth Map</h1>
+    <h2 id="description">Educational Attainment - {attrib}</h2>
+    
+    
+    <select bind:value={attrib} on:change="{
+            () => {
+                getData('2015-19')
+                console.log('asdf')
+            }
+        }">
+        <option>noHighSchool</option>
+        <option>highSchool</option>
+        <option>someCollege</option>
+        <option>bachelorsOrHigher</option>
+    </select>
     <div id='d3chart'>
     </div>
     <div class='txt'></div>
