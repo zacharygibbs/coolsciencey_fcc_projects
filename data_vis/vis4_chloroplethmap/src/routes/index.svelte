@@ -334,10 +334,7 @@
 
     <div id='d3chart'>
     </div>
-    <div class='txt'></div>
-    <div class='bar'></div>
-    <div class='bar'></div>
-
+    <div>Source: <a href="https://www.ers.usda.gov/data-products/county-level-data-sets/download-data.aspx">USDA Economic Research Service</a></div>
 </body>
 
 
