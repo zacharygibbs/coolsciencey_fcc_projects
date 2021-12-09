@@ -23,6 +23,7 @@
     let educationData = null;
     let attrib = 'bachelorsOrHigher';
     let yearString = '2015-19';
+    let yearStringBuffer = '2015-19';
     let curOpacity = 0.0;
     let map_initialized=0;
 
@@ -273,8 +274,12 @@
 
 
     const getData = (yearstring) => {
-
-        Promise.all([d3.json('counties.json'), d3.json('education' + yearstring + '.json')])
+        if(yearstring==yearString & map_initialized!=0){
+            draw_map();
+        }
+        else{
+            
+            Promise.all([d3.json('counties.json'), d3.json('education' + yearstring + '.json')])
                 .then((data) => {
                     if(map_initialized==0){
                         console.log('initalizing')
@@ -283,7 +288,10 @@
                     get_map_data(data);
                     draw_map();
                     map_initialized = map_initialized + 1;
+                    yearString = yearstring;
                 })    
+        }
+
     }
     onMount(() => {
         //d3.json('for_user_education.json')
@@ -297,12 +305,24 @@
 
     
     <h1 id="title"> FCC - Data Visualization Project 4: Chloropleth Map</h1>
-    <h2 id="description">Educational Attainment - {attrib}</h2>
-    
+    <h2 id="description">Educational Attainment - {yearString} {attrib}</h2>
+
+    <select bind:value={yearStringBuffer} on:change="{
+        () => {
+            getData(yearStringBuffer)
+            console.log('asdf')
+        }
+        }">
+        <option>1970</option>
+        <option>1980</option>
+        <option>1990</option>
+        <option>2000</option>
+        <option>2015-19</option>
+    </select>
     
     <select bind:value={attrib} on:change="{
             () => {
-                getData('2015-19')
+                getData(yearString)
                 console.log('asdf')
             }
         }">
@@ -311,6 +331,7 @@
         <option>someCollege</option>
         <option>bachelorsOrHigher</option>
     </select>
+
     <div id='d3chart'>
     </div>
     <div class='txt'></div>
